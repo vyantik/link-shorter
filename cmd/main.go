@@ -19,11 +19,15 @@ func main() {
 
 	router := http.NewServeMux()
 
+	//Handlers
+	//===============================================
 	auth.NewAuthHandler(router, &auth.AuthHandlerDeps{
 		Config: conf,
 	})
-
-	link.NewLinkHandler(router)
+	link.NewLinkHandler(router, &link.LinkHandlerDeps{
+		Config: conf,
+	})
+	//===============================================
 
 	server := http.Server{
 		Addr:    ":" + conf.Server.Port,

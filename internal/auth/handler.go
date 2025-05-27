@@ -20,8 +20,21 @@ func NewAuthHandler(router *http.ServeMux, deps *AuthHandlerDeps) {
 	handler := &AuthHandler{
 		Config: deps.Config,
 	}
-	router.HandleFunc("POST /auth/login", handler.login())
-	router.HandleFunc("POST /auth/register", handler.register())
+
+	routes := []string{
+		"POST /auth/login",
+		"POST /auth/register",
+	}
+
+	routeHandlers := []func() http.HandlerFunc{
+		handler.login,
+		handler.register,
+	}
+
+	for i, route := range routes {
+		log.Printf("[Auth] - [Handler] - [INFO] route: %s", route)
+		router.HandleFunc(route, routeHandlers[i]())
+	}
 }
 
 func (h *AuthHandler) login() http.HandlerFunc {
