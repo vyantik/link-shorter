@@ -3,6 +3,7 @@ package main
 import (
 	"app/test/configs"
 	"app/test/internal/auth"
+	"app/test/internal/link"
 	"app/test/pkg/db"
 	"log"
 	"net/http"
@@ -21,6 +22,8 @@ func main() {
 	auth.NewAuthHandler(router, &auth.AuthHandlerDeps{
 		Config: conf,
 	})
+
+	link.NewLinkHandler(router)
 
 	server := http.Server{
 		Addr:    ":" + conf.Server.Port,
