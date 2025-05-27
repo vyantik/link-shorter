@@ -78,9 +78,6 @@ func (h *LinkHandler) Create() http.HandlerFunc {
 			return
 		}
 		res.Json(w, link, http.StatusCreated)
-
-		log.Printf("[Link] - [Handler] - [INFO] create: %s", body.Url)
-
 	}
 }
 
@@ -108,8 +105,6 @@ func (h *LinkHandler) Update() http.HandlerFunc {
 			return
 		}
 		res.Json(w, link, http.StatusOK)
-
-		log.Printf("[Link] - [Handler] - [INFO] update: %s", body.Url)
 	}
 }
 
@@ -135,6 +130,5 @@ func (h *LinkHandler) Delete() http.HandlerFunc {
 		}
 
 		res.Json(w, nil, http.StatusNoContent)
-		log.Printf("[Link] - [Handler] - [INFO] delete: %d", id)
 	}
 }

@@ -5,6 +5,7 @@ import (
 	"app/test/internal/auth"
 	"app/test/internal/link"
 	"app/test/pkg/db"
+	"app/test/pkg/middleware"
 	"log"
 	"net/http"
 )
@@ -34,9 +35,17 @@ func main() {
 	})
 	//===============================================
 
+	//Middlewares
+	//===============================================
+	chain := middleware.Chain(
+		middleware.CORS,
+		middleware.Logging,
+	)
+	//===============================================
+
 	server := http.Server{
 		Addr:    ":" + conf.Server.Port,
-		Handler: router,
+		Handler: chain(router),
 	}
 
 	log.Printf("[CMD] - [INFO] Starting server on port %s", conf.Server.Port)
