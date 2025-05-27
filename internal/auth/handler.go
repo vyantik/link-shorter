@@ -28,10 +28,9 @@ func (h *AuthHandler) login() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		payload, err := req.HandleBody[LoginRequest](w, r)
 		if err != nil {
-			log.Printf("[ERROR] login: %s", err)
 			return
 		}
-		log.Printf("[INFO] login: %s", payload)
+		log.Printf("[Auth] - [Handler] - [INFO] login: %s", payload)
 
 		data := LoginResponse{
 			Token: "1234567890",
@@ -42,8 +41,16 @@ func (h *AuthHandler) login() http.HandlerFunc {
 
 func (h *AuthHandler) register() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		log.Println("[INFO] register")
-		data := map[string]string{"message": "register success"}
+		payload, err := req.HandleBody[RegisterRequest](w, r)
+		if err != nil {
+			return
+		}
+		log.Printf("[Auth] - [Handler] - [INFO] register: %s", payload)
+
+		data := RegisterResponse{
+			Message: "register success",
+			Token:   "1234567890",
+		}
 		res.Json(w, data, http.StatusCreated)
 	}
 }

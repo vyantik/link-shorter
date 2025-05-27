@@ -24,6 +24,6 @@ func main() {
 		Handler: router,
 	}
 
-	log.Printf("[INFO] Starting server on port %s", conf.Server.Port)
+	log.Printf("[CMD] - [INFO] Starting server on port %s", conf.Server.Port)
 	server.ListenAndServe()
 }
