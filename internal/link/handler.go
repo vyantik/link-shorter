@@ -5,6 +5,9 @@ import (
 	"app/test/pkg/res"
 	"log"
 	"net/http"
+	"strconv"
+
+	"gorm.io/gorm"
 )
 
 type LinkHandlerDeps struct {
@@ -60,6 +63,15 @@ func (h *LinkHandler) Create() http.HandlerFunc {
 		}
 
 		link := NewLink(body.Url)
+
+		for {
+			existedLink, _ := h.LinkRepository.GetByHash(link.Hash)
+			if existedLink == nil {
+				break
+			}
+			link.GenerateHash()
+		}
+
 		link, err = h.LinkRepository.Create(link)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -74,7 +86,30 @@ func (h *LinkHandler) Create() http.HandlerFunc {
 
 func (h *LinkHandler) Update() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		body, err := req.HandleBody[LinkUpdateRequest](w, r)
+		if err != nil {
+			return
+		}
 
+		idString := r.PathValue("id")
+		id, err := strconv.ParseUint(idString, 10, 64)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		link, err := h.LinkRepository.Update(&Link{
+			Model: gorm.Model{ID: uint(id)},
+			Url:   body.Url,
+			Hash:  body.Hash,
+		})
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+		res.Json(w, link, http.StatusOK)
+
+		log.Printf("[Link] - [Handler] - [INFO] update: %s", body.Url)
 	}
 }
 
