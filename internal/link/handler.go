@@ -1,6 +1,8 @@
 package link
 
 import (
+	"app/test/pkg/req"
+	"app/test/pkg/res"
 	"log"
 	"net/http"
 )
@@ -40,12 +42,32 @@ func NewLinkHandler(router *http.ServeMux, deps *LinkHandlerDeps) {
 
 func (h *LinkHandler) GoTo() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-
+		hash := r.PathValue("hash")
+		link, err := h.LinkRepository.GetByHash(hash)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusNotFound)
+			return
+		}
+		http.Redirect(w, r, link.Url, http.StatusTemporaryRedirect)
 	}
 }
 
 func (h *LinkHandler) Create() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		body, err := req.HandleBody[LinkCreateRequest](w, r)
+		if err != nil {
+			return
+		}
+
+		link := NewLink(body.Url)
+		link, err = h.LinkRepository.Create(link)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		res.Json(w, link, http.StatusCreated)
+
+		log.Printf("[Link] - [Handler] - [INFO] create: %s", body.Url)
 
 	}
 }
