@@ -13,7 +13,6 @@ type Response struct {
 
 func main() {
 	conf := configs.LoadConfig()
-	log.Printf("conf: %+v", conf)
 
 	router := http.NewServeMux()
 	auth.NewAuthHandler(router, &auth.AuthHandlerDeps{
@@ -21,10 +20,10 @@ func main() {
 	})
 
 	server := http.Server{
-		Addr:    ":3000",
+		Addr:    ":" + conf.Server.Port,
 		Handler: router,
 	}
 
-	log.Println("Starting server on port 3000")
+	log.Printf("Starting server on port %s", conf.Server.Port)
 	server.ListenAndServe()
 }

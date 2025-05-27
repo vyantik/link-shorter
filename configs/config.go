@@ -8,8 +8,13 @@ import (
 )
 
 type Config struct {
-	Db   DbConfig
-	Auth AuthConfig
+	Server ServerConfig
+	Db     DbConfig
+	Auth   AuthConfig
+}
+
+type ServerConfig struct {
+	Port string
 }
 
 type DbConfig struct {
@@ -27,6 +32,9 @@ func LoadConfig() *Config {
 	}
 
 	return &Config{
+		Server: ServerConfig{
+			Port: os.Getenv("APPLICATION_PORT"),
+		},
 		Db: DbConfig{
 			Dsn: os.Getenv("POSTGRES_URI"),
 		},
