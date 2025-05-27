@@ -1,6 +1,7 @@
 package configs
 
 import (
+	"fmt"
 	"log"
 	"os"
 
@@ -31,12 +32,20 @@ func LoadConfig() *Config {
 		log.Fatal("Error loading .env file")
 	}
 
+	dsn := fmt.Sprintf("postgres://%s:%s@%s:%s/%s",
+		os.Getenv("POSTGRES_USER"),
+		os.Getenv("POSTGRES_PASSWORD"),
+		os.Getenv("POSTGRES_HOST"),
+		os.Getenv("POSTGRES_PORT"),
+		os.Getenv("POSTGRES_DB"),
+	)
+
 	return &Config{
 		Server: ServerConfig{
 			Port: os.Getenv("APPLICATION_PORT"),
 		},
 		Db: DbConfig{
-			Dsn: os.Getenv("POSTGRES_URI"),
+			Dsn: dsn,
 		},
 		Auth: AuthConfig{
 			Secret: os.Getenv("SESSION_SECRET"),

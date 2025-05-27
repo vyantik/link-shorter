@@ -3,6 +3,7 @@ package main
 import (
 	"app/test/configs"
 	"app/test/internal/auth"
+	"app/test/pkg/db"
 	"log"
 	"net/http"
 )
@@ -13,8 +14,10 @@ type Response struct {
 
 func main() {
 	conf := configs.LoadConfig()
+	_ = db.NewDb(conf)
 
 	router := http.NewServeMux()
+
 	auth.NewAuthHandler(router, &auth.AuthHandlerDeps{
 		Config: conf,
 	})
