@@ -1,6 +1,7 @@
 package link
 
 import (
+	"app/test/pkg/middleware"
 	"app/test/pkg/req"
 	"app/test/pkg/res"
 	"log"
@@ -23,24 +24,41 @@ func NewLinkHandler(router *http.ServeMux, deps *LinkHandlerDeps) {
 		LinkRepository: deps.LinkRepository,
 	}
 
-	routes := []string{
+	//Routes
+	//===============================================
+	publicRoutes := []string{
 		"GET /{hash}",
+	}
+	privateRoutes := []string{
 		"POST /link",
 		"PATCH /link/{id}",
 		"DELETE /link/{id}",
 	}
+	//===============================================
 
-	routeHandlers := []func() http.HandlerFunc{
-		handler.GoTo,
+	//Handlers
+	//===============================================
+	privateHandlers := []func() http.HandlerFunc{
 		handler.Create,
 		handler.Update,
 		handler.Delete,
 	}
-
-	for i, route := range routes {
-		log.Printf("[Link] - [Handler] - [INFO] route: %s", route)
-		router.HandleFunc(route, routeHandlers[i]())
+	publicHandlers := []func() http.HandlerFunc{
+		handler.GoTo,
 	}
+	//===============================================
+
+	//Register routes
+	//===============================================
+	for i, route := range privateRoutes {
+		log.Printf("[Link] - [Handler] - [INFO] route: %s", route)
+		router.Handle(route, middleware.IsAuthed(privateHandlers[i]()))
+	}
+	for i, route := range publicRoutes {
+		log.Printf("[Link] - [Handler] - [INFO] route: %s", route)
+		router.Handle(route, publicHandlers[i]())
+	}
+	//===============================================
 }
 
 func (h *LinkHandler) GoTo() http.HandlerFunc {

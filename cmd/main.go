@@ -40,6 +40,7 @@ func main() {
 	chain := middleware.Chain(
 		middleware.CORS,
 		middleware.Logging,
+		middleware.IsAuthed,
 	)
 	//===============================================
 
