@@ -18,5 +18,7 @@ func NewDb(config *configs.Config) *Db {
 		log.Fatalf("[DB] - [NewDb] - [ERROR] %s", err)
 	}
 
+	log.Printf("[DB] - [NewDb] - [INFO] connected to database")
+
 	return &Db{DB: db}
 }
