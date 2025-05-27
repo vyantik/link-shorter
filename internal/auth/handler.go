@@ -2,6 +2,7 @@ package auth
 
 import (
 	"app/test/configs"
+	"app/test/pkg/req"
 	"app/test/pkg/res"
 	"log"
 	"net/http"
@@ -25,7 +26,13 @@ func NewAuthHandler(router *http.ServeMux, deps *AuthHandlerDeps) {
 
 func (h *AuthHandler) login() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		log.Printf("login: %s", h.Config.Auth.Secret)
+		payload, err := req.HandleBody[LoginRequest](w, r)
+		if err != nil {
+			log.Printf("[ERROR] login: %s", err)
+			return
+		}
+		log.Printf("[INFO] login: %s", payload)
+
 		data := LoginResponse{
 			Token: "1234567890",
 		}
@@ -35,7 +42,7 @@ func (h *AuthHandler) login() http.HandlerFunc {
 
 func (h *AuthHandler) register() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		log.Println("register")
+		log.Println("[INFO] register")
 		data := map[string]string{"message": "register success"}
 		res.Json(w, data, http.StatusCreated)
 	}
