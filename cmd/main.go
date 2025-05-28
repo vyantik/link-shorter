@@ -4,6 +4,7 @@ import (
 	"app/test/configs"
 	"app/test/internal/auth"
 	"app/test/internal/link"
+	"app/test/internal/user"
 	"app/test/pkg/db"
 	"app/test/pkg/middleware"
 	"log"
@@ -23,12 +24,19 @@ func main() {
 	//Repositories
 	//===============================================
 	linkRepository := link.NewLinkRepository(db)
+	userRepository := user.NewUserRepository(db)
+	//===============================================
+
+	//Services
+	//===============================================
+	authService := auth.NewAuthService(userRepository)
 	//===============================================
 
 	//Handlers
 	//===============================================
 	auth.NewAuthHandler(router, &auth.AuthHandlerDeps{
-		Config: conf,
+		Config:      conf,
+		AuthService: authService,
 	})
 	link.NewLinkHandler(router, &link.LinkHandlerDeps{
 		LinkRepository: linkRepository,

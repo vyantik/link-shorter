@@ -10,15 +10,18 @@ import (
 
 type AuthHandlerDeps struct {
 	*configs.Config
+	AuthService *AuthService
 }
 
 type AuthHandler struct {
 	*configs.Config
+	AuthService *AuthService
 }
 
 func NewAuthHandler(router *http.ServeMux, deps *AuthHandlerDeps) {
 	handler := &AuthHandler{
-		Config: deps.Config,
+		Config:      deps.Config,
+		AuthService: deps.AuthService,
 	}
 
 	routes := []string{
@@ -54,16 +57,14 @@ func (h *AuthHandler) login() http.HandlerFunc {
 
 func (h *AuthHandler) register() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		payload, err := req.HandleBody[RegisterRequest](w, r)
+		body, err := req.HandleBody[RegisterRequest](w, r)
 		if err != nil {
 			return
 		}
-		log.Printf("[Auth] - [Handler] - [INFO] register: %s", payload)
-
-		data := RegisterResponse{
-			Message: "register success",
-			Token:   "1234567890",
+		user, err := h.AuthService.Register(body.Email, body.Username, body.Password)
+		if err != nil {
+			return
 		}
-		res.Json(w, data, http.StatusCreated)
+		res.Json(w, user, http.StatusCreated)
 	}
 }
