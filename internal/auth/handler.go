@@ -63,6 +63,7 @@ func (h *AuthHandler) register() http.HandlerFunc {
 		}
 		user, err := h.AuthService.Register(body.Email, body.Username, body.Password)
 		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
 		res.Json(w, user, http.StatusCreated)

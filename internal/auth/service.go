@@ -20,10 +20,15 @@ func (s *AuthService) Register(email, username, password string) (string, error)
 	if existedUser != nil {
 		return "", errors.New(ErrUserExists)
 	}
-	user := user.NewUser(email, username, password)
-	user, err := s.userRepository.Create(user)
+
+	newUser, err := user.NewUser(email, username, password)
 	if err != nil {
 		return "", err
 	}
-	return user.Email, nil
+
+	createdUser, err := s.userRepository.Create(newUser)
+	if err != nil {
+		return "", err
+	}
+	return createdUser.Email, nil
 }
