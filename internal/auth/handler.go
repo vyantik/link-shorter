@@ -48,7 +48,7 @@ func (h *AuthHandler) login() http.HandlerFunc {
 		}
 		userEmail, err := h.AuthService.Login(body.Email, body.Password)
 		if err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
+			http.Error(w, err.Error(), http.StatusUnauthorized)
 			return
 		}
 		token, err := jwt.NewJWT(h.Config.Auth.Secret).Generate(jwt.JWTData{Email: userEmail})

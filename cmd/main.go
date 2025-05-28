@@ -13,11 +13,7 @@ import (
 	"net/http"
 )
 
-type Response struct {
-	Message string `json:"message"`
-}
-
-func main() {
+func App() (http.Handler, *configs.Config) {
 	conf := configs.LoadConfig()
 	db := db.NewDb(conf)
 
@@ -69,6 +65,11 @@ func main() {
 	})
 	//===============================================
 
+	//Events Handlers
+	//===============================================
+	go statService.AddClick()
+	//===============================================
+
 	//Middlewares
 	//===============================================
 	chain := middleware.Chain(
@@ -77,15 +78,15 @@ func main() {
 	)
 	//===============================================
 
+	return chain(router), conf
+}
+
+func main() {
+	app, conf := App()
 	server := http.Server{
 		Addr:    ":" + conf.Server.Port,
-		Handler: chain(router),
+		Handler: app,
 	}
-
-	//Events Handlers
-	//===============================================
-	go statService.AddClick()
-	//===============================================
 
 	log.Printf("[CMD] - [INFO] Starting server on port %s", conf.Server.Port)
 	server.ListenAndServe()
