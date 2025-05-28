@@ -2,14 +2,14 @@ package stat
 
 import (
 	"app/test/configs"
-	"log"
+	"app/test/pkg/res"
 	"net/http"
 	"time"
 )
 
 const (
-	FilterByDay   = "day"
-	FilterByMonth = "month"
+	GroupByDay   = "day"
+	GroupByMonth = "month"
 )
 
 type StatHandler struct {
@@ -63,11 +63,13 @@ func (h *StatHandler) GetAll() http.HandlerFunc {
 		}
 
 		by := r.URL.Query().Get("by")
-		if by != FilterByDay && by != FilterByMonth {
+		if by != GroupByDay && by != GroupByMonth {
 			http.Error(w, "Invalid by", http.StatusBadRequest)
 			return
 		}
 
-		log.Println(from, to, by)
+		stats := h.StatRepository.GetStats(by, from, to)
+
+		res.Json(w, stats, http.StatusOK)
 	}
 }
