@@ -25,19 +25,19 @@ func NewAuthHandler(router *http.ServeMux, deps *AuthHandlerDeps) {
 		AuthService: deps.AuthService,
 	}
 
-	routes := []string{
+	publicRoutes := []string{
 		"POST /auth/login",
 		"POST /auth/register",
 	}
 
-	routeHandlers := []func() http.HandlerFunc{
+	publicHandlers := []func() http.HandlerFunc{
 		handler.login,
 		handler.register,
 	}
 
-	for i, route := range routes {
+	for i, route := range publicRoutes {
 		log.Printf("[Auth] - [Handler] - [INFO] route: %s", route)
-		router.HandleFunc(route, routeHandlers[i]())
+		router.HandleFunc(route, publicHandlers[i]())
 	}
 }
 
@@ -52,7 +52,7 @@ func (h *AuthHandler) login() http.HandlerFunc {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
-		token, err := jwt.NewJWT(h.Config.Auth.Secret).GenerateToken(userEmail)
+		token, err := jwt.NewJWT(h.Config.Auth.Secret).Generate(jwt.JWTData{Email: userEmail})
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
@@ -72,7 +72,7 @@ func (h *AuthHandler) register() http.HandlerFunc {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
-		token, err := jwt.NewJWT(h.Config.Auth.Secret).GenerateToken(userEmail)
+		token, err := jwt.NewJWT(h.Config.Auth.Secret).Generate(jwt.JWTData{Email: userEmail})
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return

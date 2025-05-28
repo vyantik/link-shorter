@@ -39,6 +39,7 @@ func main() {
 		AuthService: authService,
 	})
 	link.NewLinkHandler(router, &link.LinkHandlerDeps{
+		Config:         conf,
 		LinkRepository: linkRepository,
 	})
 	//===============================================

@@ -1,6 +1,7 @@
 package link
 
 import (
+	"app/test/configs"
 	"app/test/pkg/middleware"
 	"app/test/pkg/req"
 	"app/test/pkg/res"
@@ -13,6 +14,7 @@ import (
 
 type LinkHandlerDeps struct {
 	LinkRepository *LinkRepository
+	Config         *configs.Config
 }
 
 type LinkHandler struct {
@@ -52,7 +54,7 @@ func NewLinkHandler(router *http.ServeMux, deps *LinkHandlerDeps) {
 	//===============================================
 	for i, route := range privateRoutes {
 		log.Printf("[Link] - [Handler] - [INFO] route: %s", route)
-		router.Handle(route, middleware.IsAuthed(privateHandlers[i]()))
+		router.Handle(route, middleware.IsAuthed(privateHandlers[i](), deps.Config))
 	}
 	for i, route := range publicRoutes {
 		log.Printf("[Link] - [Handler] - [INFO] route: %s", route)
@@ -104,6 +106,11 @@ func (h *LinkHandler) Update() http.HandlerFunc {
 		body, err := req.HandleBody[LinkUpdateRequest](w, r)
 		if err != nil {
 			return
+		}
+
+		email, ok := r.Context().Value(middleware.ContextEmailKey).(string)
+		if ok {
+			log.Println(email)
 		}
 
 		idString := r.PathValue("id")
