@@ -58,7 +58,7 @@ func (r *LinkRepository) GetById(id uint) (*Link, error) {
 	return &link, nil
 }
 
-func (r *LinkRepository) GetCount(email string) int64 {
+func (r *LinkRepository) GetCount() int64 {
 	var count int64
 	r.database.
 		Table("links").

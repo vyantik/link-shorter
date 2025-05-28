@@ -9,20 +9,19 @@ import (
 	"net/http"
 )
 
-type AuthHandlerDeps struct {
-	*configs.Config
-	AuthService *AuthService
-}
-
 type AuthHandler struct {
 	*configs.Config
 	AuthService *AuthService
 }
 
+type AuthHandlerDeps struct {
+	AuthHandler *AuthHandler
+}
+
 func NewAuthHandler(router *http.ServeMux, deps *AuthHandlerDeps) {
 	handler := &AuthHandler{
-		Config:      deps.Config,
-		AuthService: deps.AuthService,
+		Config:      deps.AuthHandler.Config,
+		AuthService: deps.AuthHandler.AuthService,
 	}
 
 	publicRoutes := []string{

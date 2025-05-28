@@ -2,6 +2,7 @@ package main
 
 import (
 	"app/test/internal/link"
+	"app/test/internal/stat"
 	"app/test/internal/user"
 	"fmt"
 	"log"
@@ -31,5 +32,5 @@ func main() {
 		log.Fatalf("[DB] - [NewDb] - [ERROR] %s", err)
 	}
 
-	db.AutoMigrate(&link.Link{}, &user.User{})
+	db.AutoMigrate(&link.Link{}, &user.User{}, &stat.Stat{})
 }

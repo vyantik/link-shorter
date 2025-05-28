@@ -2,6 +2,7 @@ package link
 
 import (
 	"app/test/configs"
+	"app/test/pkg/di"
 	"app/test/pkg/middleware"
 	"app/test/pkg/req"
 	"app/test/pkg/res"
@@ -12,18 +13,20 @@ import (
 	"gorm.io/gorm"
 )
 
-type LinkHandlerDeps struct {
-	LinkRepository *LinkRepository
-	Config         *configs.Config
-}
-
 type LinkHandler struct {
 	LinkRepository *LinkRepository
+	StatRepository di.IStatRepository
+}
+
+type LinkHandlerDeps struct {
+	LinkHandler *LinkHandler
+	Config      *configs.Config
 }
 
 func NewLinkHandler(router *http.ServeMux, deps *LinkHandlerDeps) {
 	handler := &LinkHandler{
-		LinkRepository: deps.LinkRepository,
+		LinkRepository: deps.LinkHandler.LinkRepository,
+		StatRepository: deps.LinkHandler.StatRepository,
 	}
 
 	//Routes
@@ -32,6 +35,7 @@ func NewLinkHandler(router *http.ServeMux, deps *LinkHandlerDeps) {
 		"GET /{hash}",
 	}
 	privateRoutes := []string{
+		"GET /link",
 		"POST /link",
 		"PATCH /link/{id}",
 		"DELETE /link/{id}",
@@ -40,13 +44,14 @@ func NewLinkHandler(router *http.ServeMux, deps *LinkHandlerDeps) {
 
 	//Handlers
 	//===============================================
+	publicHandlers := []func() http.HandlerFunc{
+		handler.GoTo,
+	}
 	privateHandlers := []func() http.HandlerFunc{
+		handler.GetAll,
 		handler.Create,
 		handler.Update,
 		handler.Delete,
-	}
-	publicHandlers := []func() http.HandlerFunc{
-		handler.GoTo,
 	}
 	//===============================================
 
@@ -71,6 +76,7 @@ func (h *LinkHandler) GoTo() http.HandlerFunc {
 			http.Error(w, err.Error(), http.StatusNotFound)
 			return
 		}
+		h.StatRepository.AddClick(link.ID)
 		http.Redirect(w, r, link.Url, http.StatusTemporaryRedirect)
 	}
 }
@@ -155,5 +161,28 @@ func (h *LinkHandler) Delete() http.HandlerFunc {
 		}
 
 		res.Json(w, nil, http.StatusNoContent)
+	}
+}
+
+func (h *LinkHandler) GetAll() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		limit, err := strconv.Atoi(r.URL.Query().Get("limit"))
+		if err != nil {
+			http.Error(w, "Invalid limit", http.StatusBadRequest)
+			return
+		}
+
+		offset, err := strconv.Atoi(r.URL.Query().Get("offset"))
+		if err != nil {
+			http.Error(w, "Invalid offset", http.StatusBadRequest)
+			return
+		}
+
+		links := h.LinkRepository.GetAll(limit, offset)
+		count := h.LinkRepository.GetCount()
+		res.Json(w, LinkGetAllResponse{
+			Links: links,
+			Count: count,
+		}, http.StatusOK)
 	}
 }
