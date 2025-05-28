@@ -7,6 +7,7 @@ import (
 	"app/test/internal/stat"
 	"app/test/internal/user"
 	"app/test/pkg/db"
+	"app/test/pkg/event"
 	"app/test/pkg/middleware"
 	"log"
 	"net/http"
@@ -22,6 +23,11 @@ func main() {
 
 	router := http.NewServeMux()
 
+	//EventBus
+	//===============================================
+	eventBus := event.NewEventBus()
+	//===============================================
+
 	//Repositories
 	//===============================================
 	linkRepository := link.NewLinkRepository(db)
@@ -32,6 +38,12 @@ func main() {
 	//Services
 	//===============================================
 	authService := auth.NewAuthService(userRepository)
+	statService := stat.NewStatService(&stat.StatServiceDeps{
+		StatService: &stat.StatService{
+			EventBus:       eventBus,
+			StatRepository: statRepository,
+		},
+	})
 	//===============================================
 
 	//Handlers
@@ -46,8 +58,14 @@ func main() {
 		Config: conf,
 		LinkHandler: &link.LinkHandler{
 			LinkRepository: linkRepository,
+			EventBus:       eventBus,
+		},
+	})
+	stat.NewStatHandler(router, &stat.StatHandlerDeps{
+		StatHandler: &stat.StatHandler{
 			StatRepository: statRepository,
 		},
+		Config: conf,
 	})
 	//===============================================
 
@@ -63,6 +81,11 @@ func main() {
 		Addr:    ":" + conf.Server.Port,
 		Handler: chain(router),
 	}
+
+	//Events Handlers
+	//===============================================
+	go statService.AddClick()
+	//===============================================
 
 	log.Printf("[CMD] - [INFO] Starting server on port %s", conf.Server.Port)
 	server.ListenAndServe()

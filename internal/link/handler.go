@@ -2,7 +2,7 @@ package link
 
 import (
 	"app/test/configs"
-	"app/test/pkg/di"
+	"app/test/pkg/event"
 	"app/test/pkg/middleware"
 	"app/test/pkg/req"
 	"app/test/pkg/res"
@@ -15,7 +15,7 @@ import (
 
 type LinkHandler struct {
 	LinkRepository *LinkRepository
-	StatRepository di.IStatRepository
+	EventBus       *event.EventBus
 }
 
 type LinkHandlerDeps struct {
@@ -26,7 +26,7 @@ type LinkHandlerDeps struct {
 func NewLinkHandler(router *http.ServeMux, deps *LinkHandlerDeps) {
 	handler := &LinkHandler{
 		LinkRepository: deps.LinkHandler.LinkRepository,
-		StatRepository: deps.LinkHandler.StatRepository,
+		EventBus:       deps.LinkHandler.EventBus,
 	}
 
 	//Routes
@@ -76,7 +76,10 @@ func (h *LinkHandler) GoTo() http.HandlerFunc {
 			http.Error(w, err.Error(), http.StatusNotFound)
 			return
 		}
-		h.StatRepository.AddClick(link.ID)
+		go h.EventBus.Publish(event.Event{
+			Type: event.LinkVisited,
+			Data: link.ID,
+		})
 		http.Redirect(w, r, link.Url, http.StatusTemporaryRedirect)
 	}
 }
