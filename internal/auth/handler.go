@@ -2,6 +2,7 @@ package auth
 
 import (
 	"app/test/configs"
+	"app/test/pkg/jwt"
 	"app/test/pkg/req"
 	"app/test/pkg/res"
 	"log"
@@ -46,12 +47,17 @@ func (h *AuthHandler) login() http.HandlerFunc {
 		if err != nil {
 			return
 		}
-		user, err := h.AuthService.Login(body.Email, body.Password)
+		userEmail, err := h.AuthService.Login(body.Email, body.Password)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
-		res.Json(w, user, http.StatusOK)
+		token, err := jwt.NewJWT(h.Config.Auth.Secret).GenerateToken(userEmail)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		res.Json(w, LoginResponse{Token: token}, http.StatusOK)
 	}
 }
 
@@ -61,11 +67,16 @@ func (h *AuthHandler) register() http.HandlerFunc {
 		if err != nil {
 			return
 		}
-		user, err := h.AuthService.Register(body.Email, body.Username, body.Password)
+		userEmail, err := h.AuthService.Register(body.Email, body.Username, body.Password)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
-		res.Json(w, user, http.StatusCreated)
+		token, err := jwt.NewJWT(h.Config.Auth.Secret).GenerateToken(userEmail)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		res.Json(w, RegisterResponse{Token: token}, http.StatusCreated)
 	}
 }

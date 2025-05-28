@@ -48,7 +48,7 @@ func LoadConfig() *Config {
 			Dsn: dsn,
 		},
 		Auth: AuthConfig{
-			Secret: os.Getenv("SESSION_SECRET"),
+			Secret: os.Getenv("JWT_SECRET"),
 		},
 	}
 }

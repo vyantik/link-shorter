@@ -7,8 +7,7 @@ type RegisterRequest struct {
 }
 
 type RegisterResponse struct {
-	Message string `json:"message"`
-	Token   string `json:"token"`
+	Token string `json:"token"`
 }
 
 type LoginRequest struct {
