@@ -61,3 +61,28 @@ func TestLoginSuccess(t *testing.T) {
 		t.Fatalf("Expected status code %d, got %d", http.StatusOK, writer.Code)
 	}
 }
+
+func TestRegisterSuccess(t *testing.T) {
+	handler, mock, err := bootstrap()
+	rows := sqlmock.NewRows([]string{"email", "password", "username"})
+	mock.ExpectQuery("SELECT").WillReturnRows(rows)
+	mock.ExpectBegin()
+	mock.ExpectQuery("INSERT").WillReturnRows(sqlmock.NewRows([]string{"id"}).AddRow(1))
+	mock.ExpectCommit()
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer mock.ExpectClose()
+	data, _ := json.Marshal(&auth.RegisterRequest{
+		Email:    "a@a.ru",
+		Username: "vyantik",
+		Password: "12345678",
+	})
+	reader := bytes.NewBuffer(data)
+	writer := httptest.NewRecorder()
+	req := httptest.NewRequest("POST", "/auth/register", reader)
+	handler.Register()(writer, req)
+	if writer.Code != http.StatusCreated {
+		t.Fatalf("Expected status code %d, got %d", http.StatusCreated, writer.Code)
+	}
+}
